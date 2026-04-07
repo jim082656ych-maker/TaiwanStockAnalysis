@@ -119,7 +119,7 @@ try:
             fig1.add_trace(go.Scatter(x=df.index, y=df['MA60'], name='60MA', line=dict(color='#0000FF', width=4)), row=1, col=1)
             fig1.add_trace(go.Scatter(x=df.index, y=df['Upper'], name='布林上', line=dict(color='gray', dash='dash')), row=1, col=1)
             fig1.add_trace(go.Scatter(x=df.index, y=df['Lower'], name='布林下', line=dict(color='gray', dash='dash'), fill='tonexty'), row=1, col=1)
-            setup_chart(fig1); st.plotly_chart(fig1, use_container_width=True); show_latest_metrics(latest, prev)
+            setup_chart(fig1); st.plotly_chart(fig1, width="stretch"); show_latest_metrics(latest, prev)
 
         with t2:
             st.markdown("""<div class="strategy-box"><h3>📖 選項 2：RSI 底部背離與 BIAS 均線回歸逆勢布局</h3><ul><li><b>RSI 底部背離</b>：股價新低但 RSI 低點不再破底，是精準抄底訊號。</li><li><b>負乖離操作</b>：當 60MA 乖離率低於 -10% 時，引發強勁回歸動能。</li></ul></div>""", unsafe_allow_html=True)
@@ -128,7 +128,7 @@ try:
             fig2.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI', line=dict(color='purple', width=4)), row=2, col=1)
             fig2.add_trace(go.Scatter(x=df.index, y=df['BIAS5'], name='BIAS 5', line=dict(color='red', width=3)), row=3, col=1)
             fig2.add_trace(go.Scatter(x=df.index, y=df['BIAS60'], name='BIAS 60', line=dict(color='blue', width=3)), row=3, col=1)
-            setup_chart(fig2); st.plotly_chart(fig2, use_container_width=True); show_latest_metrics(latest, prev)
+            setup_chart(fig2); st.plotly_chart(fig2, width="stretch"); show_latest_metrics(latest, prev)
 
         with t3:
             st.markdown("""<div class="strategy-box"><h3>📖 選項 3：KD 高檔鈍化、MACD 趨勢確認與基本面篩選</h3><ul><li><b>KD 高檔鈍化</b>：K 值連三天 > 80，應「續抱」直到脫離鈍化區。</li><li><b>基本面安全邊際</b>：挑選 ROE > 15% 且 殖利率 > 4% 的標的。</li></ul></div>""", unsafe_allow_html=True)
@@ -138,7 +138,7 @@ try:
             fig3.add_trace(go.Scatter(x=df.index, y=df['D'], name='D線', line=dict(color='orange', width=4)), row=2, col=1)
             fig3.add_trace(go.Scatter(x=df.index, y=df['DIF'], name='MACD DIF', line=dict(color='black', width=3)), row=3, col=1)
             fig3.add_trace(go.Scatter(x=df.index, y=df['DEA'], name='MACD DEA', line=dict(color='orange', width=3)), row=3, col=1)
-            setup_chart(fig3); st.plotly_chart(fig3, use_container_width=True); show_latest_metrics(latest, prev)
+            setup_chart(fig3); st.plotly_chart(fig3, width="stretch"); show_latest_metrics(latest, prev)
             st.write("---")
             c1, c2, c3, c4 = st.columns(4)
             c1.metric("P/E Ratio", f"{info.get('trailingPE', 'N/A')}")
@@ -155,7 +155,7 @@ try:
             future_idx = [df.index[-1] + timedelta(days=i) for i in range(1, days + 1)]; path = last_p * np.exp((ann_ret - (ann_vol**2)/2) * (np.arange(1, days+1)/252))
             fig_p = go.Figure(); fig_p.add_trace(go.Scatter(x=df.index[-200:], y=df['Close'][-200:], name='歷史記錄'))
             fig_p.add_trace(go.Scatter(x=future_idx, y=path, name='AI 預測路徑', line=dict(dash='dash', color='red')))
-            fig_p.update_layout(height=800, title="未來三年 AI 趨勢路徑預測", template="plotly_white"); st.plotly_chart(fig_p, use_container_width=True)
+            fig_p.update_layout(height=800, title="未來三年 AI 趨勢路徑預測", template="plotly_white"); st.plotly_chart(fig_p, width="stretch")
 
         with t5:
             st.subheader("🕒 數據中心")
@@ -169,7 +169,7 @@ try:
                 df.to_csv(save_path)
                 st.success(f"✅ 存檔成功！檔案已放在您的桌面：{save_path}")
             
-            st.dataframe(df.sort_index(ascending=False), use_container_width=True)
+            st.dataframe(df.sort_index(ascending=False), width="stretch")
 
 except Exception as e:
     st.error(f"系統發生問題: {e}")
