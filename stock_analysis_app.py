@@ -152,7 +152,7 @@ try:
             # 布林線 trace
             fig1.add_trace(go.Scatter(x=df.index, y=df['Upper'], name='布林上', line=dict(color='gray', dash='dash')), row=1, col=1)
             fig1.add_trace(go.Scatter(x=df.index, y=df['Lower'], name='布林下', line=dict(color='gray', dash='dash'), fill='tonexty'), row=1, col=1)
-            setup_chart(fig1); st.plotly_chart(fig1, use_container_width=True); show_latest_metrics(latest, prev, stock_full_name)
+            setup_chart(fig1); st.plotly_chart(fig1, width="stretch"); show_latest_metrics(latest, prev, stock_full_name)
 
         # --- 分頁 2: KD 與 MACD (詳細交叉說明) ---
         with t2:
@@ -181,7 +181,7 @@ try:
             hist_colors = ['#FF0000' if val >= 0 else '#006400' for val in df['MACD_Hist']]
             fig2.add_trace(go.Bar(x=df.index, y=df['MACD_Hist'], name='MACD柱', marker_color=hist_colors), row=3, col=1)
             fig2.add_trace(go.Scatter(x=df.index, y=df['DIF'], name='MACD DIF', line=dict(color='black', width=3)), row=4, col=1); fig2.add_trace(go.Scatter(x=df.index, y=df['DEA'], name='MACD DEA', line=dict(color='orange', width=3)), row=4, col=1)
-            setup_chart(fig2); st.plotly_chart(fig2, use_container_width=True); show_latest_metrics(latest, prev, stock_full_name)
+            setup_chart(fig2); st.plotly_chart(fig2, width="stretch"); show_latest_metrics(latest, prev, stock_full_name)
 
         # --- 分頁 3 ---
         with t3:
@@ -191,7 +191,7 @@ try:
             fig3.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI', line=dict(color='purple', width=4)), row=2, col=1)
             fig3.add_trace(go.Scatter(x=df.index, y=df['BIAS5'], name='BIAS 5', line=dict(color='red', width=2)), row=3, col=1)
             fig3.add_trace(go.Scatter(x=df.index, y=df['BIAS60'], name='BIAS 60', line=dict(color='blue', width=2)), row=3, col=1)
-            setup_chart(fig3); st.plotly_chart(fig3, use_container_width=True); show_latest_metrics(latest, prev, stock_full_name)
+            setup_chart(fig3); st.plotly_chart(fig3, width="stretch"); show_latest_metrics(latest, prev, stock_full_name)
             st.write("---"); c1, c2, c3, c4 = st.columns(4); c1.metric("P/E Ratio", f"{info.get('trailingPE', 'N/A')}"); c2.metric("EPS", f"{info.get('trailingEps', 'N/A')}"); c3.metric("ROE", f"{info.get('returnOnEquity', 0)*100:.2f}%"); c4.metric("殖利率", f"{info.get('dividendYield', 0)*100:.2f}%")
 
         # --- Tab 4 & 5 ---
@@ -199,11 +199,11 @@ try:
             st.subheader(f"🤖 {stock_full_name} AI 預測"); score = sum([1 if latest['K']>latest['D'] else 0, 1 if latest['Close']>latest['MA20'] else 0])
             st.success(f"### AI 綜合評價：{'🚀 積極買入' if score==2 else '⚖️ 中性觀望'}"); years = 3; days = 252 * years; last_p = latest['Close']; total_ret = (df['Close'][-1] / df['Close'][0]) - 1
             ann_ret = (1 + total_ret) ** (1/3) - 1; ann_vol = df['Close'].pct_change().std() * np.sqrt(252); future_idx = [df.index[-1] + timedelta(days=i) for i in range(1, days + 1)]; path = last_p * np.exp((ann_ret - (ann_vol**2)/2) * (np.arange(1, days+1)/252))
-            fig_p = go.Figure(); fig_p.add_trace(go.Scatter(x=df.index[-200:], y=df['Close'][-200:], name='歷史記錄')); fig_p.add_trace(go.Scatter(x=future_idx, y=path, name='AI 預測路徑', line=dict(dash='dash', color='red'))); fig_p.update_layout(height=800, title=f"{stock_full_name} 未來預測", template="plotly_white"); st.plotly_chart(fig_p, use_container_width=True)
+            fig_p = go.Figure(); fig_p.add_trace(go.Scatter(x=df.index[-200:], y=df['Close'][-200:], name='歷史記錄')); fig_p.add_trace(go.Scatter(x=future_idx, y=path, name='AI 預測路徑', line=dict(dash='dash', color='red'))); fig_p.update_layout(height=800, title=f"{stock_full_name} 未來預測", template="plotly_white"); st.plotly_chart(fig_p, width="stretch")
 
         with t5:
             st.subheader(f"🕒 {stock_full_name} 數據中心"); st.table(pd.DataFrame({"指標": ["最新收盤", "最高", "最低", "成交量"], "數值": [f"{latest['Close']:.2f}", f"{latest['High']:.2f}", f"{latest['Low']:.2f}", f"{int(latest['Volume']):,}"]}))
-            st.divider(); st.dataframe(df.sort_index(ascending=False), use_container_width=True)
+            st.divider(); st.dataframe(df.sort_index(ascending=False), width="stretch")
 
 except Exception as e:
     st.error(f"系統發生問題: {e}")
