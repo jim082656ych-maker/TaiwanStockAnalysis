@@ -75,11 +75,16 @@ st.sidebar.markdown("""
 """)
 
 import time
+import requests
+
+# --- 核心數據抓取配置 (偽裝成真人在使用 Chrome) ---
+session = requests.Session()
+session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'})
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_cached_history(stock_id):
     """專門抓取 K 線歷史，失敗會重試一次"""
-    ticker = yf.Ticker(stock_id)
+    ticker = yf.Ticker(stock_id, session=session)
     try:
         df = ticker.history(period="3y", interval="1d")
         if df.empty: # 嘗試第二次
@@ -94,14 +99,14 @@ def get_cached_history(stock_id):
 @st.cache_data(ttl=86400, show_spinner=False)
 def get_cached_info(stock_id):
     """基本面資訊改為快取 24 小時，因為這最容易被鎖"""
-    ticker = yf.Ticker(stock_id)
+    ticker = yf.Ticker(stock_id, session=session)
     try:
         return ticker.info
     except:
         return {}
 
 def get_live_data(stock_id):
-    ticker = yf.Ticker(stock_id)
+    ticker = yf.Ticker(stock_id, session=session)
     try:
         return ticker.fast_info
     except:

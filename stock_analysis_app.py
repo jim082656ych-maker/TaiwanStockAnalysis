@@ -76,9 +76,13 @@ def get_indicators(df):
     df['BIAS60'] = (df['Close'] - df['MA60']) / df['MA60'] * 100
     return df
 
+# --- 核心數據抓取配置 (偽裝成真人在使用 Chrome) ---
+session = requests.Session()
+session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'})
+
 @st.cache_data
 def load_data(symbol):
-    s = yf.Ticker(symbol)
+    s = yf.Ticker(symbol, session=session)
     df = s.history(period="3y")
     return get_indicators(df), s.info
 
@@ -123,7 +127,7 @@ try:
 
         def add_k_vol(fig, display_df, row_k=1, row_v=2):
             fig.add_trace(go.Candlestick(x=display_df.index, open=display_df['Open'], high=display_df['High'], low=display_df['Low'], close=display_df['Close'], name='K線', increasing_line_color='#FF0000', decreasing_line_color='#006400'), row=row_k, col=1)
-            colors = ['#FF0000' if display_df['Close'][i] >= display_df['Open'][i] else '#006400' for i in range(len(display_df))]
+            colors = ['#FF0000' if display_df['Close'].iloc[i] >= display_df['Open'].iloc[i] else '#006400' for i in range(len(display_df))]
             fig.add_trace(go.Bar(x=display_df.index, y=display_df['Volume'], name='實體成交量', marker_color=colors, opacity=1.0), row=row_v, col=1)
 
         # --- 分頁 1: MA 均線與布林通道 (詳細說明) ---
@@ -197,7 +201,7 @@ try:
         # --- Tab 4 & 5 ---
         with t4:
             st.subheader(f"🤖 {stock_full_name} AI 預測"); score = sum([1 if latest['K']>latest['D'] else 0, 1 if latest['Close']>latest['MA20'] else 0])
-            st.success(f"### AI 綜合評價：{'🚀 積極買入' if score==2 else '⚖️ 中性觀望'}"); years = 3; days = 252 * years; last_p = latest['Close']; total_ret = (df['Close'][-1] / df['Close'][0]) - 1
+            st.success(f"### AI 綜合評價：{'🚀 積極買入' if score==2 else '⚖️ 中性觀望'} Supreme"); years = 3; days = 252 * years; last_p = latest['Close']; total_ret = (df['Close'].iloc[-1] / df['Close'].iloc[0]) - 1
             ann_ret = (1 + total_ret) ** (1/3) - 1; ann_vol = df['Close'].pct_change().std() * np.sqrt(252); future_idx = [df.index[-1] + timedelta(days=i) for i in range(1, days + 1)]; path = last_p * np.exp((ann_ret - (ann_vol**2)/2) * (np.arange(1, days+1)/252))
             fig_p = go.Figure(); fig_p.add_trace(go.Scatter(x=df.index[-200:], y=df['Close'][-200:], name='歷史記錄')); fig_p.add_trace(go.Scatter(x=future_idx, y=path, name='AI 預測路徑', line=dict(dash='dash', color='red'))); fig_p.update_layout(height=800, title=f"{stock_full_name} 未來預測", template="plotly_white"); st.plotly_chart(fig_p, width="stretch")
 
