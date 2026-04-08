@@ -80,11 +80,27 @@ def get_indicators(df):
 session = requests.Session()
 session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'})
 
-@st.cache_data
-def load_data(symbol):
+# --- 核心數據抓取 (生存者模式：K線優先，失敗不崩潰) ---
+@st.cache_data(ttl=3600)
+def get_safe_history(symbol):
+    import time
     s = yf.Ticker(symbol, session=session)
-    df = s.history(period="3y")
-    return get_indicators(df), s.info
+    for _ in range(2): # 失敗會重試一次
+        try:
+            df = s.history(period="3y")
+            if not df.empty:
+                return df
+        except:
+            time.sleep(1)
+    return pd.DataFrame()
+
+@st.cache_data(ttl=86400)
+def get_safe_info(symbol):
+    try:
+        s = yf.Ticker(symbol, session=session)
+        return s.info
+    except:
+        return {}
 
 def show_latest_metrics(latest, prev, stock_full_name):
     with st.container():
@@ -99,12 +115,16 @@ def show_latest_metrics(latest, prev, stock_full_name):
 
 # --- 主程式執行 ---
 try:
-    with st.spinner('載入操盤大數據中...'):
-        df, info = load_data(symbol)
+    with st.spinner('連線至全球金融中心...'):
+        df_raw = get_safe_history(symbol)
+        info = get_safe_info(symbol)
         
-    if df.empty:
-        st.error("代號錯誤，請檢查。")
+    if df_raw.empty:
+        st.warning("⚠️ 數據加載中：Yahoo 伺服器忙碌中，請等待 10 秒後重新整理。")
+        st.info("💡 提示：這是由於雲端伺服器 IP 被暫時限制，多次刷新通常可以繞過。")
+        st.stop()
     else:
+        df = get_indicators(df_raw.copy())
         latest = df.iloc[-1]
         prev = df.iloc[-2]
         stock_name = get_chinese_name(symbol)
